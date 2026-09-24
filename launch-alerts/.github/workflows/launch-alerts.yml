@@ -1,0 +1,48 @@
+name: Launch alerts
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      test_email:
+        description: Send a test email now
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+# One run at a time so state.json never gets two writers
+concurrency:
+  group: launch-alerts
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    steps:
+      # Branch name (not the triggering SHA) so a queued run sees the latest state.json
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Check launches
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          TEST_EMAIL: ${{ inputs.test_email && '1' || '' }}
+        run: python3 notify.py
+
+      - name: Save state
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update launch alert state"
+          git pull --rebase
+          git push
