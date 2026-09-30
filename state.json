@@ -15,14 +15,6 @@
       "done": {},
       "hold_notified": "",
       "net": "2026-10-01T15:10:06+00:00"
-    },
-    "7d1afb26-6f9c-429b-9ccf-29012fd1e519": {
-      "done": {
-        "T-1h": false,
-        "T-5m": false
-      },
-      "hold_notified": "",
-      "net": "2026-09-28T12:48:59+00:00"
     }
   }
 }
